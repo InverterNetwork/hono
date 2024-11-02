@@ -1,0 +1,45 @@
+{
+  "name": "example-hono",
+  "module": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "NODE_ENV=production bun src/index.ts",
+    "dev": "NODE_ENV=development bun --watch run src/index.ts",
+    "watch": "tsc -w -p ./tsconfig.json",
+    "docker": "chmod +x docker.sh && ./docker.sh",
+    "postinstall": "husky || true",
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "tsc-files --pretty --noEmit"
+    ],
+    "src/**/*.{mjs,cjs,js,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.4.1",
+    "@commitlint/config-conventional": "^19.4.1",
+    "@types/bun": "latest",
+    "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.3.3",
+    "standard-version": "^9.5.0",
+    "tsc-files": "^1.1.4",
+    "type-fest": "^4.26.1",
+    "typescript-eslint": "^8.5.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.10.0",
+    "mongodb": "^6.2.0"
+  },
+  "dependencies": {
+    "croner": "^8.1.1",
+    "hono": "^4.5.11",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.8.0"
+  }
+}
