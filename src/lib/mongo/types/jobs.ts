@@ -1,4 +1,4 @@
-import type { CacheBase } from './cache'
+import type { CacheBase } from '@/types'
 
 export enum EJobType {
   EXEMPLE_JOB = 'EXEMPLE_JOB',
