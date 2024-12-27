@@ -1,38 +1,39 @@
 # use the official Bun image
-# see all versions at <https://hub.docker.com/r/oven/bun/tags>
 FROM oven/bun:1 AS base
 WORKDIR /usr/src/app
 
 # install dependencies into temp folder
-# this will cache them and speed up future builds
 FROM base AS install
-RUN mkdir -p /temp/dev
-COPY package.json bun.lockb /temp/dev/
-RUN cd /temp/dev && bun install --frozen-lockfile
+# Combine RUN commands and only install necessary packages
+RUN apt-get update && apt-get install -y \
+    python3-minimal \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/* \
+    && bun add -g node-gyp@latest
 
-# install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY package.json bun.lockb /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production
+# Copy only package files first to leverage cache
+COPY package.json bun.lockb ./
 
-# copy node_modules from temp folder
-# then copy all (non-ignored) project files into the image
-FROM install AS prerelease
-COPY --from=install /temp/dev/node_modules node_modules
+# Install all dependencies once instead of twice
+RUN bun install \
+    && cp -r node_modules prod_modules \
+    && bun install --production \
+    && mv node_modules dev_modules
+
+# Build stage
+FROM base AS build
+COPY --from=install /usr/src/app/dev_modules ./node_modules
 COPY . .
+RUN bun --cwd=client vite build
 
-# [optional] tests & build
-# ENV NODE_ENV=production
-# RUN bun test
-# RUN bun run build
-
-# copy production dependencies and source code into final image
+# Production stage
 FROM base AS release
 WORKDIR /usr/src/app
-COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app .
+COPY --from=install /usr/src/app/prod_modules ./node_modules
+COPY --from=build /usr/src/app/client/dist ./client/dist
+COPY . .
 
-# run the app
 USER bun
 EXPOSE 8080/tcp
 CMD ["bun", "run", "start"]

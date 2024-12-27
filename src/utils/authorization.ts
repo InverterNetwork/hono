@@ -4,8 +4,9 @@ import { scrypt, randomBytes } from 'crypto'
 import { promisify } from 'util'
 import { UserModel } from '@/lib/mongo'
 import type { UserRole } from '@/types'
-import { splitBearerToken, authorized } from '.'
 import type { Context } from 'hono'
+import { authorized } from '@inverter-network/sdk'
+import { splitBearerToken } from '.'
 
 type Hex = `0x${string}`
 

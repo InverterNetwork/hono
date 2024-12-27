@@ -4,19 +4,20 @@ const getEnvValue = <T>(
   errorMessage: string,
   parser: (value: string) => T = (value) => value as T
 ): T => {
+  // Set value to undefined
   let value: T | undefined
-
+  // Check if the value is set in the environment variables
   if (process.env[envKey]) {
     value = parser(process.env[envKey] as string)
   }
-
+  // Check if the value is set in the AWS_SECRET environment variable
   if (process.env.AWS_SECRET) {
     const awsSecret = JSON.parse(process.env.AWS_SECRET)
     value = parser(awsSecret[awsSecretKey])
   }
-
+  // If the value is not set, throw an error
   if (value === undefined) throw new Error(errorMessage)
-
+  // Return the value
   return value
 }
 

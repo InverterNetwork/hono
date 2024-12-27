@@ -1,4 +1,4 @@
-import { isNotEmpty } from '@/utils'
+import { isNotEmpty } from '@inverter-network/sdk'
 import type { Context } from 'hono'
 
 export const getBearerToken = (c: Context) => {
