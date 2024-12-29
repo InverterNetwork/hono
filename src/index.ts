@@ -1,25 +1,32 @@
+// Core imports
 import { Hono } from 'hono'
-
-import { Routes } from '@/routes'
-import { serveStatic } from 'hono/bun'
-import { serveClientHtml, ascii_welcome_div } from './utils'
 import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
+import { serveStatic } from 'hono/bun'
 
+// Database
 import mongoose from 'mongoose'
-import { MainService } from '@/services'
 import { connectDB } from '@/utils'
+
+// Local imports
+import { Routes } from '@/routes'
+import { MainService } from '@/services'
+import { serveClientHtml, ascii_welcome_div } from './utils'
 import { sessionMiddleware } from '@/middlewares'
 
-// Step 1: Initialize Hono
-const app = new Hono()
+// Environment configuration
 const isDev = process.env.NODE_ENV === 'development'
 
+// Initialize application
+const app = new Hono()
+
+// Development middleware
 if (isDev) app.use(logger())
 
-// Step 2: Connect to MongoDB
+// Database connection
 await connectDB()
 
+// CORS configuration
 app.use(
   '*',
   cors({
@@ -30,30 +37,31 @@ app.use(
   })
 )
 
-// Step 3: Initialize middlewares
+// Session handling
 app.use(sessionMiddleware(mongoose))
 
-// Step 4: Initialize services
+// Initialize services
 export const mainService = new MainService()
 
-// ROUTES
+// Static file serving
 app.use('/static/*', serveStatic({ root: './' }))
 
-// Create an API group first
+// API routes
 const api = app.basePath('/api')
 api.get('/', (c) => c.html(ascii_welcome_div))
 api.get('/verify', Routes.verify)
 
-// Catch-all route for static files should be last
+// Client-side routing
 if (isDev) {
   app.all('/*', serveClientHtml)
 } else {
+  // Production static file serving
   app.all('/*', serveStatic({ root: './client/dist' }))
   app.all('/*', serveStatic({ path: './client/dist/index.html' }))
 }
 
-// Then add the static/client routes - MOVED TO END
+// Export server configuration
 export default {
-  port: 8080,
+  port: process.env.PORT ? parseInt(process.env.PORT) : 8080,
   fetch: app.fetch,
 }

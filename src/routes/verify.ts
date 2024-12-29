@@ -19,7 +19,7 @@ export async function verify(c: Context) {
 
     // If no Authorization Header was found
     if (!authToken || authToken === 'undefined') {
-      c.req.session.destroy(() => {}) // Destroy the session
+      // c.req.session.destroy(() => {}) // Destroy the session
       throw new HTTPError(
         "<authorization: Bearer __token__> couldn't be found in the headers",
         404
