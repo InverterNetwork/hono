@@ -15,7 +15,7 @@ export default ({ mode }: { mode: string }) => {
     plugins: [TanStackRouterVite({}), react()],
     resolve: {
       alias: {
-        '@/c': path.resolve(__dirname, './src'),
+        '@c': path.resolve(__dirname, './src'),
       },
     },
   })

@@ -1,10 +1,9 @@
 import * as React from 'react'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { Providers } from '@/c/providers'
-import { Navbar } from '@/c/components/navbar'
+import { Providers } from '@c/providers'
+import { Navbar } from '@c/components/navbar'
 
-import '@/c/styles/global.css'
+import '@c/styles/global.css'
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -27,8 +26,6 @@ function RootComponent() {
           </div>
         </Providers>
       </div>
-
-      <TanStackRouterDevtools position="bottom-right" />
     </>
   )
 }

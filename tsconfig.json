@@ -27,7 +27,7 @@
     // Path aliases
     "paths": {
       "@/*": ["./src/*"],
-      "@/c/*": ["./client/src/*"]
+      "@c/*": ["./client/src/*"]
     }
   }
 }

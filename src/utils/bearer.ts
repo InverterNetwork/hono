@@ -1,5 +1,7 @@
 import { isNotEmpty } from '@inverter-network/sdk'
+import { createPublicKey } from 'crypto'
 import type { Context } from 'hono'
+import { writeLog } from '../../tools'
 
 export const getBearerToken = (c: Context) => {
   const token = c.req.header('authorization')?.split(' ')[1]
@@ -13,16 +15,34 @@ export const splitBearerToken = (token: string) => {
 
   return { key, secret }
 }
+// Add these type definitions
+type JWK = {
+  kty: string
+  n: string
+  e: string
+  alg: string
+  kid: string
+  use: string
+}
 
-export const getBearerConfig = (token?: string) => {
-  if (!token) throw new Error('No token provided')
+export async function getPublicKeyFromJWKS(JWKS_URL: string): Promise<string> {
+  const response = await fetch(JWKS_URL)
+  const jwks: { keys: JWK[] } = await response.json()
+  const jwk = jwks.keys[0]
 
-  const config: RequestInit = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: 'include',
-  }
+  const publicKey = createPublicKey({ key: jwk, format: 'jwk' })
+    .export({
+      type: 'spki', // Changed from pkcs1 to spki
+      format: 'pem',
+    })
+    .toString()
+    .replace(/\\n/g, '\n')
+    .replace(/\n$/, '')
 
-  return config
+  writeLog({
+    content: publicKey,
+    label: 'publicKey',
+  })
+
+  return publicKey
 }

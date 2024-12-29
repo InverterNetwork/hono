@@ -27,12 +27,12 @@ import {
 import { DynamicWagmiConnector } from '@dynamic-labs/wagmi-connector'
 
 // Local imports
-import { dynamicTheme } from '@/c/styles/dynamic-theme'
+import { dynamicTheme } from '@c/styles/dynamic-theme'
 import {
   dynamicChainsToViem,
   viemChainsToDynamic,
   getDrpcTransport,
-} from '@/c/utils'
+} from '@c/utils'
 
 // ============================================================================
 // Constants & Configuration
@@ -104,7 +104,6 @@ export function ConnectorProvider({ children }: { children: React.ReactNode }) {
         environmentId: import.meta.env.VITE_DYNAMIC_ID || '',
         cssOverrides,
         walletConnectors: [EthereumWalletConnectors],
-        initialAuthenticationMode: 'connect-only',
         overrides: {
           // Network override handler to merge dashboard and initial networks
           evmNetworks: (dashboardNetworks) => {

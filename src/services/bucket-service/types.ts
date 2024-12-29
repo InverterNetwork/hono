@@ -1,4 +1,4 @@
-import type { PrunedFile } from '@/types'
+import type { PrunedFile } from '@inverter-network/sdk'
 import { Readable } from 'stream'
 
 // PARAMS

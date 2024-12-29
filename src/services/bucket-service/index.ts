@@ -1,5 +1,6 @@
 import { Readable } from 'stream'
 import mongoose from 'mongoose'
+import type { PrunedFile } from '@inverter-network/sdk'
 
 import type {
   BucketExistsParams,
@@ -8,7 +9,6 @@ import type {
   GetBucketReturnType,
   UploadBucketParams,
   UploadBucketReturnType,
-  PrunedFile,
 } from '@/types'
 
 export class BucketService {

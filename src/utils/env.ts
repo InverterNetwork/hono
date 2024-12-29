@@ -21,5 +21,8 @@ const getEnvValue = <T>(
   return value
 }
 
-export const mongoUri = (): string =>
+export const getMongoUri = (): string =>
   getEnvValue('MONGO_URI', 'MONGO_URI', 'Mongo URI not found')
+
+export const getDynamicId = (): string =>
+  getEnvValue('VITE_DYNAMIC_ID', 'VITE_DYNAMIC_ID', 'Dynamic ID not found')

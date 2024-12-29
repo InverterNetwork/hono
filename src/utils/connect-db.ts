@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import { mongoUri } from './env'
+import { getMongoUri } from './env'
 
-const MONGO_URI = mongoUri()
+const MONGO_URI = getMongoUri()
 
 export async function connectDB() {
   try {
