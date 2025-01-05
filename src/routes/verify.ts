@@ -60,7 +60,7 @@ export async function verify(c: Context) {
     // Update State and handle session
     if (!!existingUser) {
       state.role = existingUser.role
-      c.req.session.auth = state // Set the user data in session
+      Object.assign(c.req.session, state)
     } else {
       try {
         await UserModel.create({
@@ -68,7 +68,7 @@ export async function verify(c: Context) {
           email: state.email,
         })
 
-        c.req.session.auth = state // Set the user data in session
+        Object.assign(c.req.session, state)
       } catch (e: any) {
         throw e
       }
