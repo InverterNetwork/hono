@@ -1,0 +1,115 @@
+name: CI to Amazon - PROD
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+env:
+  REGION: eu-central-1
+  PLATFORM: prod
+  ECR_REPOSITORY: hono
+
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read
+
+jobs:
+  build:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          channel: 'n-platform-deployments'
+          config: .github/config/slack.yml
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.ACCOUNT_ID_PROD}}:role/platform-github-action-role-${{env.PLATFORM}}
+          aws-region: ${{ env.REGION }}
+          role-duration-seconds: 1200
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{env.ECR_REPOSITORY }}-${{env.PLATFORM}}
+          IMAGE_TAG: ${{ github.ref }}
+
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        if: always()
+
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        id: build-success
+        if: steps.build-image.outcome == 'success'
+        env:
+          SLACK_CHANNEL: n-platform-deployments
+          SLACK_COLOR: ${{ job.status }} # or a specific color like 'good' or '#ff00ff'
+          SLACK_ICON: https://avatars.githubusercontent.com/u/114390497?s=200&v=4
+          SLACK_MESSAGE: 'Image Build & Push has been completed by successfully  :rocket:'
+          SLACK_TITLE: Message
+          SLACK_USERNAME: dm_cibot
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        id: build-failure
+        if: steps.build-image.outcome == 'failure'
+        env:
+          SLACK_CHANNEL: n-platform-deployments
+          SLACK_COLOR: '#ff0000' # or a specific color like 'good' or '#ff00ff'
+          SLACK_ICON: https://avatars.githubusercontent.com/u/114390497?s=200&v=4
+          SLACK_MESSAGE: 'Image Build & Push has not been completed...Please check CI Action  :x:'
+          SLACK_TITLE: Message
+          SLACK_USERNAME: inverternetwork_cibot
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+      - uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          channel: 'n-platform-deployments'
+          config: .github/config/slack.yml
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
+
+
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+
