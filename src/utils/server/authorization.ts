@@ -6,7 +6,7 @@ import { UserModel } from '@/lib/mongo'
 import type { UserRole } from '@/types'
 import type { Context } from 'hono'
 import { authorized } from '@inverter-network/sdk'
-import { splitBearerToken } from '.'
+import { splitBearerToken } from './bearer'
 
 type Hex = `0x${string}`
 

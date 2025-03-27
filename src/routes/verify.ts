@@ -1,6 +1,8 @@
 import { UserModel } from '@/lib/mongo'
 import { type Auth } from '@/types'
-import { getBearerToken, getDynamicId, getPublicKeyFromJWKS } from '@/utils'
+import { getDynamicId } from '@/utils'
+import { getBearerToken } from '@/utils/server'
+import { getPublicKeyFromJWKS } from '@/utils/server'
 import { apiResponse, HTTPError } from '@inverter-network/sdk'
 import type { Context } from 'hono'
 import jwt from 'jsonwebtoken'
@@ -60,7 +62,7 @@ export async function verify(c: Context) {
     // Update State and handle session
     if (!!existingUser) {
       state.role = existingUser.role
-      Object.assign(c.req.session, state)
+      c.req.session.auth = state
     } else {
       try {
         await UserModel.create({
@@ -68,7 +70,7 @@ export async function verify(c: Context) {
           email: state.email,
         })
 
-        Object.assign(c.req.session, state)
+        c.req.session.auth = state
       } catch (e: any) {
         throw e
       }

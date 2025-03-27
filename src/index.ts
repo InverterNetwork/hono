@@ -6,12 +6,12 @@ import { serveStatic } from 'hono/bun'
 
 // Database
 import mongoose from 'mongoose'
-import { connectDB } from '@/utils'
+import { connectDB } from '@/utils/server'
 
 // Local imports
 import { Routes } from '@/routes'
 import { MainService } from '@/services'
-import { serveClientHtml, ascii_welcome_div } from './utils'
+import { serveClientHtml, ascii_welcome_div } from '@/utils'
 import { sessionMiddleware } from '@/middlewares'
 
 // Environment configuration
@@ -43,6 +43,11 @@ app.use(sessionMiddleware(mongoose))
 // Initialize services
 export const mainService = new MainService()
 
+// Favicon
+app.get('/favicon.ico', (c) => {
+  return c.redirect('/static/favicon.ico')
+})
+
 // Static file serving
 app.use('/static/*', serveStatic({ root: './' }))
 
@@ -60,8 +65,10 @@ if (isDev) {
   app.all('/*', serveStatic({ path: './client/dist/index.html' }))
 }
 
+const port = process.env.PORT ? parseInt(process.env.PORT) : 8080
+
 // Export server configuration
 export default {
-  port: process.env.PORT ? parseInt(process.env.PORT) : 8080,
+  port,
   fetch: app.fetch,
 }

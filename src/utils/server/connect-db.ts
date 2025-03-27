@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import { getMongoUri } from './env'
+import { getMongoUri } from '@/utils'
 
 const MONGO_URI = getMongoUri()
 
